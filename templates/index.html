@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}ホーム - 不動産事業計画{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1>不動産事業計画システム</h1>
+        <p class="lead">YAML設定ファイルをベースにした不動産投資の財務計画システムです。</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-gear"></i> 設定管理
+                </h5>
+                <p class="card-text">
+                    物件情報、ローン条件、税金設定などのパラメータをWebから編集できます。
+                </p>
+                <a href="{{ url_for('config') }}" class="btn btn-primary">設定編集</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-table"></i> データ表示
+                </h5>
+                <p class="card-text">
+                    収入、支出、減価償却、キャッシュフローなどを40年間の表形式で表示します。
+                </p>
+                <a href="{{ url_for('data') }}" class="btn btn-success">データ表示</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-calculator"></i> 計算機能
+                </h5>
+                <p class="card-text">
+                    ローン返済、税金計算、減価償却、APR算出などの主要な財務計算を実行します。
+                </p>
+                <button class="btn btn-info" onclick="calculateData()">再計算実行</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <h3>現在の設定概要</h3>
+        <div class="config-form">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>物件情報</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>購入価格:</strong> {{ config.get('purchase_price', 'N/A') }}</li>
+                        <li><strong>自己資金比率:</strong> {{ (config.get('initial_capital_ratio', 0) * 100)|round(1) }}%</li>
+                        <li><strong>経過年数:</strong> {{ config.get('elapsed_years', 'N/A') }}年</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5>ローン条件</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>年利:</strong> {{ (config.get('loan', {}).get('annual_rate', 0) * 100)|round(2) }}%</li>
+                        <li><strong>返済年数:</strong> {{ config.get('loan', {}).get('years', 'N/A') }}年</li>
+                        <li><strong>開始月:</strong> {{ config.get('loan', {}).get('start_month', 'N/A') }}月</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>建物情報</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>建物価格:</strong> {{ config.get('building', {}).get('cost', 'N/A') }}</li>
+                        <li><strong>法定耐用年数:</strong> {{ config.get('building', {}).get('statutory_life', 'N/A') }}年</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5>税金情報</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>土地評価額:</strong> {{ config.get('tax', {}).get('land_assessed_value', 'N/A') }}</li>
+                        <li><strong>戸数:</strong> {{ config.get('tax', {}).get('units', 'N/A') }}戸</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function calculateData() {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = '計算中...';
+    
+    fetch('/api/calculate')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('計算が完了しました。データ表示ページで結果を確認してください。');
+            } else {
+                alert('計算エラー: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('エラーが発生しました: ' + error);
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.textContent = '再計算実行';
+        });
+}
+</script>
+{% endblock %}

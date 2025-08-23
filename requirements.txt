@@ -1,2 +1,6 @@
 pytest
 pyyaml
+flask
+flask-login
+werkzeug
+pandas
