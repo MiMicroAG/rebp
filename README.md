@@ -1,63 +1,109 @@
 # RealEstateBusinessPlan
 
-このリポジトリは、融資（ローン）の返済計画を計算する Python スクリプト群の最小実装を含みます。
+このリポジトリは、融資（ローン）・税金・減価償却・収支計算など不動産事業計画の主要ロジックをPythonで実装したものです。
 
-主な目的
-- 年単位での返済集計（元金、利息、総返済、累計、残高）を取得する関数 `loan_schedule_annually` の提供
-- 開始月によるカレンダー年内の支払月数（波数）を反映
+## 主な機能
 
-主要ファイル
-- `loan.py` — 返済計算の実装（関数: `loan_schedule_annually`）
-- `main.py` — サンプルのエントリポイント（簡易の greet）
-- `examples/demo_loan.py` — `loan_schedule_annually` の実行例を表示するデモ
-- `tests/test_loan.py` — pytest による単体テスト
-- `requirements.txt` — 開発依存（pytest）
+- 年単位での返済集計（元金、利息、総返済、累計、残高）
+- 固定資産税・都市計画税の年次計算
+- 建物・設備の減価償却費計算
+- 収入・支出・キャッシュフロー・APRの算出
 
-クイックスタート（Windows PowerShell）
+## 主要ファイル
 
-1) プロジェクトルートへ移動
+- `loan.py` — 返済計算
+- `tax.py` — 税金計算
+- `depreciation.py` — 減価償却
+- `income.py` — 収入計算
+- `expenses.py` — 支出計算
+- `cashflow.py` — 総合キャッシュフロー
+- `project_config.yml` — 設定ファイル
+- `examples/` — 実行例・サンプル
+- `tests/` — 機能テスト
+
+## クイックスタート
 
 ```powershell
 cd 'C:\Users\taxa\OneDrive\Develop\work\RealEstateBusinessPlan'
-```
-
-2) 仮想環境を作成し有効化、依存をインストール
-
-```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-3) デモ実行（仮想環境の python を使う）
+## デモ実行
 
 ```powershell
 .\.venv\Scripts\python.exe examples\demo_loan.py
 ```
 
-あるいは、パッケージ形式で実行する場合:
-
-```powershell
-.\.venv\Scripts\python.exe -m examples.demo_loan
-```
-
-テスト実行
+## テスト実行
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-デモの想定出力例
+## API要点
 
-（このリポジトリで実行した出力の抜粋）
+### ローン返済
 
-Annual summary:
-Year 1: months=9, principal=375.00, interest=31.25, total=406.25, cumulative=406.25, balance_end=625.00
-Year 2: months=12, principal=500.00, interest=19.79, total=519.79, cumulative=926.04, balance_end=125.00
-Year 3: months=3, principal=125.00, interest=1.04, total=126.04, cumulative=1052.08, balance_end=0.00
+```python
+loan_schedule_annually(principal, annual_rate, years, start_month=1, method='equal_total')
+```
 
-Monthly sample (first 6 months):
-m=1, payment=45.83, principal=41.67, interest=4.17, balance=958.33
+### 税金計算
+
+```python
+compute_annual_taxes(land_assessed_value, building_assessed_value, land_area_m2, units, years=40, ...)
+```
+
+### 減価償却
+
+```python
+compute_depreciation_from_config(yaml_path)
+```
+
+---
+
+## 設定例（YAML）
+
+```yaml
+elapsed_years: 15
+building:
+	cost: 35654400
+	statutory_life: 34
+equipment:
+	cost: 0
+	statutory_life: 15
+```
+
+---
+
+## CSVフォーマット例
+
+### 減価償却率表
+```csv
+# 国税庁の償却率表（定額法）
+service_life,declining_balance_rate,straight_line_rate
+22,0.114,0.046
+```
+
+### 建物の経年減点補正率
+```csv
+# 年別の補正倍率
+1,0.9659
+2,0.9318
+```
+
+---
+
+## よくある質問・トラブルシュート
+
+- モジュール参照エラー時は `sys.path` の追加や仮想環境の利用を推奨
+- CSV/Excel出力や丸めオプション、GUI/CLI拡張も今後対応予定
+
+---
+
+質問や追加要件（例: CSV出力、複数ローン合算、可視化など）があればお気軽にご連絡ください。
 m=2, payment=45.66, principal=41.67, interest=3.99, balance=916.67
 m=3, payment=45.49, principal=41.67, interest=3.82, balance=875.00
 m=4, payment=45.31, principal=41.67, interest=3.65, balance=833.33
@@ -222,5 +268,6 @@ python .\examples\run_depreciation.py
 
 
 質問や追加したい要件（例えば '期間ごとの返済カレンダーをCSVで出力したい' 等）があれば教えてください。
-#   r e b p  
+#   r e b p 
+ 
  
