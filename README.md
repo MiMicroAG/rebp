@@ -103,16 +103,29 @@ service_life,declining_balance_rate,straight_line_rate
 
 ---
 
-質問や追加要件（例: CSV出力、複数ローン合算、可視化など）があればお気軽にご連絡ください。
+
+---
+
+### ローン返済サンプル（月次明細）
+
+```text
 m=2, payment=45.66, principal=41.67, interest=3.99, balance=916.67
 m=3, payment=45.49, principal=41.67, interest=3.82, balance=875.00
 m=4, payment=45.31, principal=41.67, interest=3.65, balance=833.33
 m=5, payment=45.14, principal=41.67, interest=3.47, balance=791.67
 m=6, payment=44.97, principal=41.67, interest=3.30, balance=750.00
+```
 
-API（要点）
+---
 
-関数: `loan_schedule_annually(principal, annual_rate, years, start_month=1, method='equal_total')`
+## API（要点）
+
+関数:
+
+```python
+loan_schedule_annually(principal, annual_rate, years, start_month=1, method='equal_total')
+```
+
 - principal: 貸付金額（float > 0）
 - annual_rate: 年利（% で与えてもよいし小数で与えても良い; 例えば 3.5 または 0.035）
 - years: 返済年数（int > 0）
