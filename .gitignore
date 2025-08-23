@@ -1,0 +1,11 @@
+# 禁止したいファイル・ディレクトリを記載
+.env
+*.sqlite3
+*.db
+*.log
+__pycache__/
+.pytest_cache/
+.venv/
+data/
+*.csv
+project_config.yml
