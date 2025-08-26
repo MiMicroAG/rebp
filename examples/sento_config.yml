@@ -1,0 +1,61 @@
+# 銭湯（公衆浴場）物件向けのサンプル設定
+# 既存の計算ロジック（賃貸用）に合わせるため、売上=家賃として扱います。
+# monthly_rent は「月次売上（円）」、units=1 として入力してください。
+
+# --- 物件基本/ローン設定 ---
+purchase_price: 420,000,000     # 物件購入価格（円）
+initial_capital_ratio: 0.25     # 自己資金比率（25%）
+
+# ローン（トップレベル or loan: のどちらでも可）
+annual_rate: 1.4                 # 金利（年利%表記でもOK。小数なら 0.014）
+years: 30                        # 返済年数
+start_month: 1                   # 返済開始月（1=1月）
+method: equal_total              # 返済方式（equal_total=元利均等 / equal_principal=元金均等）
+group_by: calendar               # カレンダー年で集計
+
+# --- 税金（課税評価額など）---
+taxes:
+  building_assessed_value: 180,000,000   # 家屋の課税評価額（目安）
+  land_assessed_value: 120,000,000       # 土地の課税評価額（目安）
+  land_area_m2: 500                      # 土地面積
+  fixed_asset_rate: 0.014                # 固定資産税率
+  city_plan_rate: 0.003                  # 都市計画税率
+  building_correction_rates_csv: data/building_correction_rates.csv
+  land_residential_special: true         # 住宅用地特例（用途により適宜）
+
+# --- 減価償却（建物・設備）---
+elapsed_years: 5
+building:
+  cost: 200,000,000                # 建物（償却のベース）
+  statutory_life: 34               # 法定耐用年数
+equipment:
+  cost: 80,000,000                 # 付属設備（ボイラー・ポンプ等）
+  statutory_life: 15
+
+# --- 収入（売上）---
+# 銭湯の売上を monthly_rent として入力します（units=1）。
+# rent_change は売上成長率、vacancy は休業/来客減を表す調整率として使えます。
+income:
+  monthly_rent: 3,500,000          # 月次売上（円）
+  units: 1
+  rent_change:
+    initial: 0.01                  # 初年度の成長率 +1%
+    trend: -0.002                  # 毎年 0.2pt 低下（例: +1% → +0.8% → +0.6% ...）
+  vacancy:
+    initial: 0.03                  # 実質稼働率調整（休業/天候/季節性など）
+    trend: 0.0
+
+# --- 支出（運営費）---
+# 既存キーにマッピングします：
+# - utilities: 電気/ガス/水道等の合算（年額）
+# - repairs: 日常修繕・軽微メンテ（年額）
+# - insurance: 保険（年額）
+# - management_fee_percent: 管理委託や人件費の一定割合（必要に応じて使用）
+# - repairs_plan_csv: 年次の大規模修繕・設備更新（CSV: year,capex_large,equipment_repairs）
+expenses:
+  operations:
+    management_fee_percent: 0        # 委託比率を使わない場合は 0 か省略
+    repairs: 1,200,000               # 日常修繕
+    insurance: 300,000               # 保険
+    utilities: 8,400,000             # 電気/ガス/水道（合算・年額）
+  repairs_plan_csv: data/sento_repairs_plan.csv

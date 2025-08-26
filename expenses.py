@@ -375,14 +375,34 @@ def compute_expenses_from_config(yaml_path: Optional[str] = None, years: int = 4
     except Exception:
         pass
 
-    # Loan config (top-level keys per existing examples)
-    principal = to_float(cfg.get("principal", 0.0), 0.0)
-    annual_rate = to_float(cfg.get("annual_rate", 0.0), 0.0)
-    loan_years = to_int(cfg.get("years", 0), 0)
-    start_month = to_int(cfg.get("start_month", 1), 1)
-    method = str(cfg.get("method", "equal_total"))
-    group_by = str(cfg.get("group_by", "calendar"))
-    rate_schedule = cfg.get("rate_schedule")
+    # Loan config
+    # Initialize with safe defaults
+    principal: float = 0.0
+    annual_rate: float = 0.0
+    loan_years: int = 0
+    start_month: int = 1
+    method: str = "equal_total"
+    group_by: str = "calendar"
+    rate_schedule: Any = None
+
+    # Accept either top-level keys or nested under 'loan'
+    loan_cfg = (cfg.get("loan", {}) or {})
+    # principal: prefer explicit principal; else derive from purchase_price & initial_capital_ratio
+    principal = to_float(cfg.get("principal", loan_cfg.get("principal", 0.0)), 0.0)
+    if not principal:
+        try:
+            purchase_price = to_float(cfg.get("purchase_price", 0.0), 0.0)
+            icr = to_float(cfg.get("initial_capital_ratio", loan_cfg.get("initial_capital_ratio", 0.0)), 0.0)
+            if purchase_price and 0.0 <= icr < 1.0:
+                principal = float(purchase_price) * (1.0 - float(icr))
+        except Exception:
+            principal = 0.0
+    annual_rate = to_float(cfg.get("annual_rate", loan_cfg.get("annual_rate", 0.0)), 0.0)
+    loan_years = to_int(cfg.get("years", loan_cfg.get("years", 0)), 0)
+    start_month = to_int(cfg.get("start_month", loan_cfg.get("start_month", 1)), 1)
+    method = str(cfg.get("method", loan_cfg.get("method", "equal_total")))
+    group_by = str(cfg.get("group_by", loan_cfg.get("group_by", "calendar")))
+    rate_schedule = cfg.get("rate_schedule", loan_cfg.get("rate_schedule", None))
 
     # Operations config
     ops_cfg = (cfg.get("expenses", {}) or {}).get("operations", {}) or {}
